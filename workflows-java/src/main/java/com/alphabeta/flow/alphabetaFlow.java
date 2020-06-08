@@ -16,6 +16,8 @@ import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 import net.corda.core.utilities.ProgressTracker.Step;
 
+import java.util.Date;
+
 import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 /**
@@ -36,6 +38,7 @@ public class alphabetaFlow {
 
         private final int iouValue;
         private final Party otherParty;
+
 
         private final Step GENERATING_TRANSACTION = new Step("Generating transaction based on new IOU.");
         private final Step VERIFYING_TRANSACTION = new Step("Verifying contract constraints.");
@@ -67,6 +70,7 @@ public class alphabetaFlow {
         public Initiator(int iouValue, Party otherParty) {
             this.iouValue = iouValue;
             this.otherParty = otherParty;
+
         }
 
         @Override
