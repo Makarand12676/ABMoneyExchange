@@ -1,19 +1,30 @@
 package com.example.server;
 
-import com.example.state.IOUState;
+//import com.example.state.IOUState;
+import com.alphabeta.flow.alphabetaFlow;
+import com.alphabeta.state.IOUState;
 import net.corda.client.rpc.CordaRPCClient;
 import net.corda.client.rpc.CordaRPCConnection;
 import net.corda.core.contracts.StateAndRef;
+import net.corda.core.contracts.UniqueIdentifier;
+import net.corda.core.identity.CordaX500Name;
+import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.messaging.DataFeed;
 import net.corda.core.node.NodeInfo;
 import net.corda.core.node.services.Vault;
+import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.utilities.NetworkHostAndPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx.Observable;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Demonstration of using the CordaRPCClient to connect to a Corda Node.
@@ -44,6 +55,31 @@ public class JavaClientRpc {
         //hit the node to retrieve network map
         List<NodeInfo> nodes = proxy.networkMapSnapshot();
         logger.info("All the nodes available in this network", nodes);
+        // ****** Mak - Execute alphabetaFlow using proxy
+        Party me = proxy.nodeInfo().getLegalIdentities().get(0);
+        String op = "O=Siva,L=India,C=RS";
+
+        Party lender = proxy.wellKnownPartyFromX500Name(CordaX500Name.parse(op));
+        //Party lender = Optional.ofNullable(proxy.wellKnownPartyFromX500Name(CordaX500Name.parse(op))).orElseThrow(() -> new IllegalArgumentException("Unknown party name."));
+        IOUState state = new IOUState(10,lender, me,new UniqueIdentifier());
+        /*
+        try {
+            SignedTransaction result = proxy.startTrackedFlowDynamic(alphabetaFlow.Initiator.class,state ).getReturnValue().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        */
+        try {
+            SignedTransaction result = proxy.startTrackedFlowDynamic(alphabetaFlow.Initiator.class,10,lender ).getReturnValue().get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        //****** mak - end addition
 
         //hit the node to get snapshot and observable for IOUState
         DataFeed<Vault.Page<IOUState>, Vault.Update<IOUState>> dataFeed = proxy.vaultTrack(IOUState.class);
